@@ -23,7 +23,19 @@ abstract class BasicBeautyCamPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+  Future<void> switchCamera() {
+    throw UnimplementedError('switchCamera() has not been implemented.');
+  }
+
+  Future<void> takePicture() {
+    throw UnimplementedError('takePicture() has not been implemented.');
+  }
+
+  Future<void> enableBeauty() {
+    throw UnimplementedError('enableBeauty() has not been implemented.');
+  }
+
+  Future<void> disableBeauty() {
+    throw UnimplementedError('disableBeauty() has not been implemented.');
   }
 }

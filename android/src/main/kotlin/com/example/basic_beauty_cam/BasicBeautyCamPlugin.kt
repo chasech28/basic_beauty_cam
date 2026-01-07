@@ -1,43 +1,25 @@
 package com.example.basic_beauty_cam
 
+import io.flutter.embedding.android.KeyData.CHANNEL
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
 
 /** BasicBeautyCamPlugin */
-class BasicBeautyCamPlugin :
-    FlutterPlugin,
-    MethodCallHandler {
-    // The MethodChannel that will the communication between Flutter and native Android
-    //
-    // This local reference serves to register the plugin with the Flutter Engine and unregister it
-    // when the Flutter Engine is detached from the Activity
+class BasicBeautyCamPlugin : FlutterPlugin {
     private lateinit var channel: MethodChannel
+    private val viewTypeId = "basic_beauty_cam"
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         flutterPluginBinding.platformViewRegistry.registerViewFactory(
-            "basic_beauty_cam",
-            NativeViewFactory()
+            viewTypeId,
+            NativeViewFactory(flutterPluginBinding.binaryMessenger)
         )
 
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "basic_beauty_cam")
-        channel.setMethodCallHandler(this)
-    }
-
-    override fun onMethodCall(
-        call: MethodCall,
-        result: Result
-    ) {
-//        if (call.method == "getPlatformVersion") {
-//            result.success("Android ${android.os.Build.VERSION.RELEASE}")
-//        } else {
-//            result.notImplemented()
-//        }
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
 }
+

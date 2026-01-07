@@ -11,8 +11,8 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
     CameraRecordGLSurfaceView(context, attrs) {
 
     companion object {
-        private const val TAG = "AICameraGLSurfaceView"
-        private const val BEAUTY = "@beautify face 1"
+        const val TAG = "AICameraGLSurfaceView"
+        const val BEAUTY = "@beautify face 1 1080 1920"
 
         @Volatile
         private var instance: AICameraGLSurfaceView? = null
@@ -26,7 +26,7 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
         @JvmStatic
         fun getInstance(context: Context, attrs: AttributeSet?): AICameraGLSurfaceView {
             return instance ?: synchronized(this) {
-                instance ?: AICameraGLSurfaceView(context.applicationContext, attrs).also {
+                instance ?: AICameraGLSurfaceView(context, attrs).also {
                     instance = it
                 }
             }
@@ -43,7 +43,7 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
 
         override fun run() {
             if (isTimerRunning) {
-                count ++
+                count++
                 Log.d(TAG, "timer: $count")
                 handler.postDelayed(this, delayMillis)
             }
@@ -75,10 +75,20 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
 //        stopShotTimer()
     }
 
+    fun enableBeauty(enable: Boolean) {
+        if (enable) {
+            setFilterWithConfig(BEAUTY)
+        } else {
+            setFilterWithConfig("")
+        }
+    }
+
     init {
         Log.d(TAG, "AICameraGLSurfaceView init")
 
         switchCamera()
+        setFitFullView(true)
+        setPictureSize(1080, 1920, true)
 
         setOnCreateCallback {
             setFilterWithConfig(BEAUTY)

@@ -37,16 +37,68 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             children: [
               BasicBeautyCamView(),
-              TextButton(
-                onPressed: () {
-                  PermissionUtils.checkAndRequestPermission(Permission.camera);
-                },
-                child: Text('请求相机权限'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      shadowColor: Colors.black,
+                      elevation: 4,
+                    ),
+                    onPressed: () {
+                      BasicBeautyCam.switchCamera();
+                    },
+                    child: Text('切换相机'),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      shadowColor: Colors.black,
+                      elevation: 4,
+                    ),
+                    onPressed: () {
+                      BasicBeautyCam.takePicture();
+                    },
+                    child: Text('拍照'),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      shadowColor: Colors.black,
+                      elevation: 4,
+                    ),
+                    onPressed: () {
+                      BasicBeautyCam.enableBeauty();
+                    },
+                    child: Text('开启美颜'),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      shadowColor: Colors.black,
+                      elevation: 4,
+                    ),
+                    onPressed: () {
+                      BasicBeautyCam.disableBeauty();
+                    },
+                    child: Text('关闭美颜'),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+class CustomButton extends StatelessWidget {
+  const CustomButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
