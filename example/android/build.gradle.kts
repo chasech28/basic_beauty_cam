@@ -1,13 +1,9 @@
 allprojects {
     repositories {
-        maven { url = uri("https://maven.aliyun.com/repository/public") }
-        maven { url = uri("https://maven.aliyun.com/repository/google") }
-        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
-        maven { url = uri("https://maven.aliyun.com/repository/jcenter") }
-        maven { url = uri("https://maven.aliyun.com/repository/center") }
         maven {
             url = uri("https://maven.wysaid.org/")
         }
+        
         google()
         mavenCentral()
     }

@@ -1,4 +1,4 @@
-import 'package:basic_beauty_cam_example/beautify.dart';
+import 'package:basic_beauty_cam/beautify.dart';
 import 'package:basic_beauty_cam_example/permission.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
