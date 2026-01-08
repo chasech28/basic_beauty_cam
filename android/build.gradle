@@ -5,7 +5,7 @@ buildscript {
     ext.kotlin_version = "2.1.0"
     repositories {
         maven {
-            url = uri("https://maven.wysaid.org/")
+            url("https://maven.wysaid.org/")
         }
         google()
         mavenCentral()
@@ -20,7 +20,7 @@ buildscript {
 allprojects {
     repositories {
         maven {
-            url = uri("https://maven.wysaid.org/")
+            url("https://maven.wysaid.org/")
         }
         google()
         mavenCentral()
