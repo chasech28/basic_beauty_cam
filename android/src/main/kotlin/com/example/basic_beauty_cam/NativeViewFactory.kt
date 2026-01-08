@@ -11,6 +11,9 @@ class NativeViewFactory(private val messenger: BinaryMessenger) :
 
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
         val creationParams = args as Map<String?, Any?>?
-        return NativeView(context, viewId, creationParams, messenger)
+        val nativeView =  NativeView(context, viewId, creationParams)
+
+        CameraApi.setUp(messenger, nativeView)
+        return nativeView
     }
 }
