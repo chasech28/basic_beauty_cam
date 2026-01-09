@@ -4,35 +4,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
 import org.wysaid.view.CameraRecordGLSurfaceView
 
-class AICameraGLSurfaceView private constructor(context: Context, attrs: AttributeSet?) :
+class AICameraGLSurfaceView(context: Context, attrs: AttributeSet?) :
     CameraRecordGLSurfaceView(context, attrs) {
 
     companion object {
         const val TAG = "AICameraGLSurfaceView"
         const val BEAUTY = "@beautify face 1 1080 1920"
-
-        @Volatile
-        private var instance: AICameraGLSurfaceView? = null
-
-        /**
-         * 获取单例实例
-         * @param context 上下文（建议使用ApplicationContext以避免内存泄漏）
-         * @param attrs 属性集
-         * @return AICameraGLSurfaceView单例实例
-         */
-        @JvmStatic
-        fun getInstance(context: Context, attrs: AttributeSet?): AICameraGLSurfaceView {
-            return instance ?: synchronized(this) {
-                instance ?: AICameraGLSurfaceView(context, attrs).also {
-                    instance = it
-                }
-            }
-        }
     }
 
     // HandlerThread for background processing
@@ -40,11 +21,12 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
         start()
     }
     private val handler = Handler(handlerThread.looper)
-    
+
     // 定时器相关
+    private var isTimerEnabled = false
     private var isTimerRunning = false
     private val delayMillis = 1000L
-    
+
     // Image frame callback
     private var onImageFrameCallback: ((Bitmap) -> Unit)? = null
 
@@ -60,6 +42,20 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
         }
     }
 
+    init {
+        Log.d(TAG, "AICameraGLSurfaceView init")
+
+        presetCameraForward(false)
+        setZOrderOnTop(false)
+        setZOrderMediaOverlay(true)
+        setPictureSize(2048, 2048, true)
+
+        setOnCreateCallback {
+            enableBeauty()
+        }
+    }
+
+
     /**
      * Set callback to receive image frames
      * @param callback Callback that receives Bitmap when a new frame is captured
@@ -68,15 +64,28 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
         this.onImageFrameCallback = callback
     }
 
-    fun startShotTimer() {
-        Log.d(TAG, "timer start")
-        if (!isTimerRunning) {
-            isTimerRunning = true
-            handler.post(shotRunnable)
+    fun startImageStream() {
+        isTimerEnabled = true
+        startShotTimer()
+    }
+
+    fun stopImageStream() {
+        isTimerEnabled = false
+        stopShotTimer()
+    }
+
+
+    private fun startShotTimer() {
+        if (isTimerEnabled) {
+            Log.d(TAG, "timer start")
+            if (!isTimerRunning) {
+                isTimerRunning = true
+                handler.post(shotRunnable)
+            }
         }
     }
 
-    fun stopShotTimer() {
+    private fun stopShotTimer() {
         isTimerRunning = false
         handler.removeCallbacks(shotRunnable)
     }
@@ -92,31 +101,12 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
         Log.d(TAG, "onPause")
         stopShotTimer()
     }
-    
-//    fun release(onComplete: () -> Unit) {
-//        Log.d(TAG, "release")
-//        stopShotTimer()
-//        handlerThread.quitSafely()
-//        onComplete()
-//    }
 
-    fun enableBeauty(enable: Boolean) {
-        if (enable) {
-            setFilterWithConfig(BEAUTY)
-        } else {
-            setFilterWithConfig("")
-        }
+    fun enableBeauty() {
+        setFilterWithConfig(BEAUTY)
     }
 
-    init {
-        Log.d(TAG, "AICameraGLSurfaceView init")
-
-        switchCamera()
-        setFitFullView(true)
-        setPictureSize(1080, 1920, true)
-
-        setOnCreateCallback {
-            startShotTimer()
-        }
+    fun disableBeauty() {
+        setFilterWithConfig("")
     }
 }

@@ -1,35 +1,44 @@
+import 'dart:io';
+
 import 'package:basic_beauty_cam/basic_beauty_cam.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class BasicBeautyCamView extends StatelessWidget {
-  const BasicBeautyCamView({super.key});
+class BeautyCameraPreview extends StatefulWidget {
+  const BeautyCameraPreview({super.key});
 
   @override
+  State<BeautyCameraPreview> createState() => _BeautyCameraPreviewState();
+}
+
+class _BeautyCameraPreviewState extends State<BeautyCameraPreview> {
+  @override
   Widget build(BuildContext context) {
-    // This is used in the platform side to register the view.
     const String viewType = 'basic_beauty_cam';
-    // Pass parameters to the platform side.
     final Map<String, dynamic> creationParams = <String, dynamic>{};
 
-    // return AndroidView(
-    //   viewType: viewType,
-    //   layoutDirection: TextDirection.ltr,
-    //   creationParams: creationParams,
-    //   creationParamsCodec: const StandardMessageCodec(),
-    // );
+    return Platform.isAndroid
+        ? buildAndroidView(viewType, creationParams)
+        : buildIOSView(viewType, creationParams);
+  }
 
-    return Expanded(
-      child: AndroidView(
-        viewType: viewType,
-        layoutDirection: TextDirection.ltr,
-        creationParams: creationParams,
-        creationParamsCodec: const StandardMessageCodec(),
-        onPlatformViewCreated: (_) {
-          BasicBeautyCam.enableBeauty();
-          BasicBeautyCam.setImageProcessor();
-        },
-      ),
+  Widget buildAndroidView(viewType, creationParams) {
+    return AndroidView(
+      viewType: viewType,
+      layoutDirection: TextDirection.ltr,
+      creationParams: creationParams,
+      creationParamsCodec: const StandardMessageCodec(),
+      onPlatformViewCreated: (_) {},
+    );
+  }
+
+  Widget buildIOSView(viewType, creationParams) {
+    return UiKitView(
+      viewType: viewType,
+      layoutDirection: TextDirection.ltr,
+      creationParams: creationParams,
+      creationParamsCodec: const StandardMessageCodec(),
+      onPlatformViewCreated: (_) {},
     );
   }
 }

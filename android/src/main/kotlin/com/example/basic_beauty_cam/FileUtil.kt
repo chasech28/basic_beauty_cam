@@ -37,7 +37,7 @@ object FileUtil {
             }
 
             val timestamp = dateFormat.format(Date())
-            val fileName = "${IMAGE_PREFIX}${timestamp}${IMAGE_SUFFIX}"
+            val fileName = "${timestamp}${IMAGE_SUFFIX}"
             val imageFile = File(cacheDir, fileName)
 
             val fos = FileOutputStream(imageFile)

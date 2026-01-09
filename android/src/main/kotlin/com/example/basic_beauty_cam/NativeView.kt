@@ -5,6 +5,8 @@ import ImageFrame
 import ImageFrameProcessor
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import com.example.basic_beauty_cam.AICameraGLSurfaceView.Companion.BEAUTY
@@ -18,7 +20,10 @@ internal class NativeView(
 ) :
     PlatformView, CameraApi {
 
-    private val cameraView = AICameraGLSurfaceView.getInstance(context, null)
+    private val cameraView = AICameraGLSurfaceView(context, null)
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+
 
     override fun getView(): View {
         return cameraView
@@ -38,9 +43,17 @@ internal class NativeView(
 
     override fun dispose() {
         Log.d(TAG, "dispose")
+        
+        // Stop image stream
+        cameraView.stopImageStream()
+        cameraView.setOnImageFrameCallback(null)
 
-        cameraView.release {}
         cameraView.onPause()
+        // Clean up camera view and release camera hardware resources
+        cameraView.release {}
+
+        // Clean up main handler
+        mainHandler.removeCallbacksAndMessages(null)
     }
 
     override fun switchCamera(callback: (Result<Unit>) -> Unit) {
@@ -59,27 +72,25 @@ internal class NativeView(
     }
 
     override fun enableBeauty(callback: (Result<Unit>) -> Unit) {
-        cameraView.enableBeauty(true)
+        cameraView.enableBeauty()
         callback(Result.success(Unit))
     }
 
     override fun disableBeauty(callback: (Result<Unit>) -> Unit) {
-        cameraView.enableBeauty(false)
+        cameraView.disableBeauty()
         callback(Result.success(Unit))
     }
 
     override fun startImageStream(callback: (Result<Unit>) -> Unit) {
-        cameraView.startShotTimer()
-
-        // Set up image frame callback from camera view
         cameraView.setOnImageFrameCallback { bitmap ->
             sendImageFrameToFlutter(bitmap)
         }
+        cameraView.startImageStream()
         callback(Result.success(Unit))
     }
 
     override fun stopImageStream(callback: (Result<Unit>) -> Unit) {
-        cameraView.stopShotTimer()
+        cameraView.stopImageStream()
         callback(Result.success(Unit))
     }
 
@@ -96,8 +107,12 @@ internal class NativeView(
             height = bitmap.height.toLong(),
             rotation = 0L
         )
-        cameraStreamProcessor.onImageFrame(frame) { result ->
-            // Handle result if needed (optional)
+        Log.d(TAG, "width: ${bitmap.width}, height: ${bitmap.height} bytes: ${bytes.size}")
+        
+        mainHandler.post {
+            cameraStreamProcessor.onImageFrame(frame) { result ->
+                // Handle result if needed (optional)
+            }
         }
     }
 }
