@@ -1,7 +1,9 @@
 package com.example.basic_beauty_cam
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
@@ -33,18 +35,37 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
         }
     }
 
+    // HandlerThread for background processing
+    private val handlerThread = HandlerThread("CameraHandlerThread").apply {
+        start()
+    }
+    private val handler = Handler(handlerThread.looper)
+    
     // 定时器相关
-    private val handler = Handler(Looper.getMainLooper())
     private var isTimerRunning = false
     private val delayMillis = 1000L
+    
+    // Image frame callback
+    private var onImageFrameCallback: ((Bitmap) -> Unit)? = null
 
     private val shotRunnable = object : Runnable {
         override fun run() {
             if (isTimerRunning) {
-                Log.d(TAG, "timer run")
+                takeShot { bitmap ->
+                    Log.d(TAG, "takeShot")
+                    onImageFrameCallback?.invoke(bitmap)
+                }
                 handler.postDelayed(this, delayMillis)
             }
         }
+    }
+
+    /**
+     * Set callback to receive image frames
+     * @param callback Callback that receives Bitmap when a new frame is captured
+     */
+    fun setOnImageFrameCallback(callback: ((Bitmap) -> Unit)?) {
+        this.onImageFrameCallback = callback
     }
 
     fun startShotTimer() {
@@ -71,6 +92,13 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
         Log.d(TAG, "onPause")
         stopShotTimer()
     }
+    
+//    fun release(onComplete: () -> Unit) {
+//        Log.d(TAG, "release")
+//        stopShotTimer()
+//        handlerThread.quitSafely()
+//        onComplete()
+//    }
 
     fun enableBeauty(enable: Boolean) {
         if (enable) {

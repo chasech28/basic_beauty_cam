@@ -41,19 +41,19 @@ bool _deepEquals(Object? a, Object? b) {
 
 class ImageFrame {
   ImageFrame({
-    this.bytes,
-    this.width,
-    this.height,
-    this.rotation,
+    required this.bytes,
+    required this.width,
+    required this.height,
+    required this.rotation,
   });
 
-  Uint8List? bytes;
+  Uint8List bytes;
 
-  int? width;
+  int width;
 
-  int? height;
+  int height;
 
-  int? rotation;
+  int rotation;
 
   List<Object?> _toList() {
     return <Object?>[
@@ -70,10 +70,10 @@ class ImageFrame {
   static ImageFrame decode(Object result) {
     result as List<Object?>;
     return ImageFrame(
-      bytes: result[0] as Uint8List?,
-      width: result[1] as int?,
-      height: result[2] as int?,
-      rotation: result[3] as int?,
+      bytes: result[0]! as Uint8List,
+      width: result[1]! as int,
+      height: result[2]! as int,
+      rotation: result[3]! as int,
     );
   }
 
@@ -122,27 +122,27 @@ class _PigeonCodec extends StandardMessageCodec {
   }
 }
 
-abstract class CameraStreamCallback {
+abstract class ImageFrameProcessor {
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   void onImageFrame(ImageFrame frame);
 
-  static void setUp(CameraStreamCallback? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+  static void setUp(ImageFrameProcessor? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
     messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
       final pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.com.example.basic_beauty_cam.CameraStreamCallback.onImageFrame$messageChannelSuffix', pigeonChannelCodec,
+          'dev.flutter.pigeon.com.example.basic_beauty_cam.ImageFrameProcessor.onImageFrame$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.com.example.basic_beauty_cam.CameraStreamCallback.onImageFrame was null.');
+          'Argument for dev.flutter.pigeon.com.example.basic_beauty_cam.ImageFrameProcessor.onImageFrame was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ImageFrame? arg_frame = (args[0] as ImageFrame?);
           assert(arg_frame != null,
-              'Argument for dev.flutter.pigeon.com.example.basic_beauty_cam.CameraStreamCallback.onImageFrame was null, expected non-null ImageFrame.');
+              'Argument for dev.flutter.pigeon.com.example.basic_beauty_cam.ImageFrameProcessor.onImageFrame was null, expected non-null ImageFrame.');
           try {
             api.onImageFrame(arg_frame!);
             return wrapResponse(empty: true);

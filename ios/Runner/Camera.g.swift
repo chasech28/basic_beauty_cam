@@ -55,6 +55,10 @@ private func wrapError(_ error: Any) -> [Any?] {
   ]
 }
 
+private func createConnectionError(withChannelName channelName: String) -> PigeonError {
+  return PigeonError(code: "channel-error", message: "Unable to establish connection on channel: '\(channelName)'.", details: "")
+}
+
 private func isNullish(_ value: Any?) -> Bool {
   return value is NSNull || value == nil
 }
@@ -64,11 +68,127 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
   return value as! T?
 }
 
+func deepEqualsCamera(_ lhs: Any?, _ rhs: Any?) -> Bool {
+  let cleanLhs = nilOrValue(lhs) as Any?
+  let cleanRhs = nilOrValue(rhs) as Any?
+  switch (cleanLhs, cleanRhs) {
+  case (nil, nil):
+    return true
+
+  case (nil, _), (_, nil):
+    return false
+
+  case is (Void, Void):
+    return true
+
+  case let (cleanLhsHashable, cleanRhsHashable) as (AnyHashable, AnyHashable):
+    return cleanLhsHashable == cleanRhsHashable
+
+  case let (cleanLhsArray, cleanRhsArray) as ([Any?], [Any?]):
+    guard cleanLhsArray.count == cleanRhsArray.count else { return false }
+    for (index, element) in cleanLhsArray.enumerated() {
+      if !deepEqualsCamera(element, cleanRhsArray[index]) {
+        return false
+      }
+    }
+    return true
+
+  case let (cleanLhsDictionary, cleanRhsDictionary) as ([AnyHashable: Any?], [AnyHashable: Any?]):
+    guard cleanLhsDictionary.count == cleanRhsDictionary.count else { return false }
+    for (key, cleanLhsValue) in cleanLhsDictionary {
+      guard cleanRhsDictionary.index(forKey: key) != nil else { return false }
+      if !deepEqualsCamera(cleanLhsValue, cleanRhsDictionary[key]!) {
+        return false
+      }
+    }
+    return true
+
+  default:
+    // Any other type shouldn't be able to be used with pigeon. File an issue if you find this to be untrue.
+    return false
+  }
+}
+
+func deepHashCamera(value: Any?, hasher: inout Hasher) {
+  if let valueList = value as? [AnyHashable] {
+     for item in valueList { deepHashCamera(value: item, hasher: &hasher) }
+     return
+  }
+
+  if let valueDict = value as? [AnyHashable: AnyHashable] {
+    for key in valueDict.keys { 
+      hasher.combine(key)
+      deepHashCamera(value: valueDict[key]!, hasher: &hasher)
+    }
+    return
+  }
+
+  if let hashableValue = value as? AnyHashable {
+    hasher.combine(hashableValue.hashValue)
+  }
+
+  return hasher.combine(String(describing: value))
+}
+
+    
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct ImageFrame: Hashable {
+  var bytes: FlutterStandardTypedData
+  var width: Int64
+  var height: Int64
+  var rotation: Int64
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ImageFrame? {
+    let bytes = pigeonVar_list[0] as! FlutterStandardTypedData
+    let width = pigeonVar_list[1] as! Int64
+    let height = pigeonVar_list[2] as! Int64
+    let rotation = pigeonVar_list[3] as! Int64
+
+    return ImageFrame(
+      bytes: bytes,
+      width: width,
+      height: height,
+      rotation: rotation
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      bytes,
+      width,
+      height,
+      rotation,
+    ]
+  }
+  static func == (lhs: ImageFrame, rhs: ImageFrame) -> Bool {
+    return deepEqualsCamera(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashCamera(value: toList(), hasher: &hasher)
+  }
+}
 
 private class CameraPigeonCodecReader: FlutterStandardReader {
+  override func readValue(ofType type: UInt8) -> Any? {
+    switch type {
+    case 129:
+      return ImageFrame.fromList(self.readValue() as! [Any?])
+    default:
+      return super.readValue(ofType: type)
+    }
+  }
 }
 
 private class CameraPigeonCodecWriter: FlutterStandardWriter {
+  override func writeValue(_ value: Any) {
+    if let value = value as? ImageFrame {
+      super.writeByte(129)
+      super.writeValue(value.toList())
+    } else {
+      super.writeValue(value)
+    }
+  }
 }
 
 private class CameraPigeonCodecReaderWriter: FlutterStandardReaderWriter {
@@ -86,12 +206,47 @@ class CameraPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 }
 
 
+/// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
+protocol ImageFrameProcessorProtocol {
+  func onImageFrame(frame frameArg: ImageFrame, completion: @escaping (Result<Void, PigeonError>) -> Void)
+}
+class ImageFrameProcessor: ImageFrameProcessorProtocol {
+  private let binaryMessenger: FlutterBinaryMessenger
+  private let messageChannelSuffix: String
+  init(binaryMessenger: FlutterBinaryMessenger, messageChannelSuffix: String = "") {
+    self.binaryMessenger = binaryMessenger
+    self.messageChannelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+  }
+  var codec: CameraPigeonCodec {
+    return CameraPigeonCodec.shared
+  }
+  func onImageFrame(frame frameArg: ImageFrame, completion: @escaping (Result<Void, PigeonError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.com.example.basic_beauty_cam.ImageFrameProcessor.onImageFrame\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([frameArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(PigeonError(code: code, message: message, details: details)))
+      } else {
+        completion(.success(()))
+      }
+    }
+  }
+}
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol CameraApi {
   func switchCamera(completion: @escaping (Result<Void, Error>) -> Void)
-  func takePicture(completion: @escaping (Result<Void, Error>) -> Void)
+  func takePicture(completion: @escaping (Result<String?, Error>) -> Void)
   func enableBeauty(completion: @escaping (Result<Void, Error>) -> Void)
   func disableBeauty(completion: @escaping (Result<Void, Error>) -> Void)
+  func startImageStream(completion: @escaping (Result<Void, Error>) -> Void)
+  func stopImageStream(completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -120,8 +275,8 @@ class CameraApiSetup {
       takePictureChannel.setMessageHandler { _, reply in
         api.takePicture { result in
           switch result {
-          case .success:
-            reply(wrapResult(nil))
+          case .success(let res):
+            reply(wrapResult(res))
           case .failure(let error):
             reply(wrapError(error))
           }
@@ -159,6 +314,36 @@ class CameraApiSetup {
       }
     } else {
       disableBeautyChannel.setMessageHandler(nil)
+    }
+    let startImageStreamChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.example.basic_beauty_cam.CameraApi.startImageStream\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startImageStreamChannel.setMessageHandler { _, reply in
+        api.startImageStream { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startImageStreamChannel.setMessageHandler(nil)
+    }
+    let stopImageStreamChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.com.example.basic_beauty_cam.CameraApi.stopImageStream\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      stopImageStreamChannel.setMessageHandler { _, reply in
+        api.stopImageStream { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      stopImageStreamChannel.setMessageHandler(nil)
     }
   }
 }

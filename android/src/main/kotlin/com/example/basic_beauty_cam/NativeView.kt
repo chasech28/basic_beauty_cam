@@ -1,9 +1,10 @@
 package com.example.basic_beauty_cam
 
 import CameraApi
-import CameraStreamCallback
 import ImageFrame
+import ImageFrameProcessor
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
 import android.view.View
 import com.example.basic_beauty_cam.AICameraGLSurfaceView.Companion.BEAUTY
@@ -13,12 +14,11 @@ internal class NativeView(
     private val context: Context,
     private val id: Int,
     private val creationParams: Map<String?, Any?>?,
-    private val cameraStreamCallback: CameraStreamCallback,
+    private var cameraStreamProcessor: ImageFrameProcessor
 ) :
     PlatformView, CameraApi {
 
     private val cameraView = AICameraGLSurfaceView.getInstance(context, null)
-    private var isStreaming = false
 
     override fun getView(): View {
         return cameraView
@@ -69,13 +69,16 @@ internal class NativeView(
     }
 
     override fun startImageStream(callback: (Result<Unit>) -> Unit) {
-        isStreaming = true
         cameraView.startShotTimer()
+
+        // Set up image frame callback from camera view
+        cameraView.setOnImageFrameCallback { bitmap ->
+            sendImageFrameToFlutter(bitmap)
+        }
         callback(Result.success(Unit))
     }
 
     override fun stopImageStream(callback: (Result<Unit>) -> Unit) {
-        isStreaming = false
         cameraView.stopShotTimer()
         callback(Result.success(Unit))
     }
@@ -84,21 +87,17 @@ internal class NativeView(
         const val TAG = "NativeView"
     }
 
-    /**
-     * Helper method to send image frames from native code to Flutter
-     * Call this method from your camera frame callback
-     */
-    fun sendImageFrameToFlutter(bytes: ByteArray, width: Int, height: Int, rotation: Int) {
-        if (isStreaming) {
-            val frame = ImageFrame(
-                bytes = bytes,
-                width = width.toLong(),
-                height = height.toLong(),
-                rotation = rotation.toLong()
-            )
-            cameraStreamCallback.onImageFrame(frame) { result ->
-                // Handle result if needed (optional)
-            }
+    private fun sendImageFrameToFlutter(bitmap: Bitmap) {
+        val bytes = FileUtil.bitmapToBytes(bitmap)
+
+        val frame = ImageFrame(
+            bytes = bytes,
+            width = bitmap.width.toLong(),
+            height = bitmap.height.toLong(),
+            rotation = 0L
+        )
+        cameraStreamProcessor.onImageFrame(frame) { result ->
+            // Handle result if needed (optional)
         }
     }
 }

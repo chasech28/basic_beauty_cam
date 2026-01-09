@@ -82,18 +82,18 @@ class FlutterError (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class ImageFrame (
-  val bytes: ByteArray? = null,
-  val width: Long? = null,
-  val height: Long? = null,
-  val rotation: Long? = null
+  val bytes: ByteArray,
+  val width: Long,
+  val height: Long,
+  val rotation: Long
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ImageFrame {
-      val bytes = pigeonVar_list[0] as ByteArray?
-      val width = pigeonVar_list[1] as Long?
-      val height = pigeonVar_list[2] as Long?
-      val rotation = pigeonVar_list[3] as Long?
+      val bytes = pigeonVar_list[0] as ByteArray
+      val width = pigeonVar_list[1] as Long
+      val height = pigeonVar_list[2] as Long
+      val rotation = pigeonVar_list[3] as Long
       return ImageFrame(bytes, width, height, rotation)
     }
   }
@@ -140,9 +140,9 @@ private open class CameraPigeonCodec : StandardMessageCodec() {
 
 
 /** Generated class from Pigeon that represents Flutter messages that can be called from Kotlin. */
-class CameraStreamCallback(private val binaryMessenger: BinaryMessenger, private val messageChannelSuffix: String = "") {
+class ImageFrameProcessor(private val binaryMessenger: BinaryMessenger, private val messageChannelSuffix: String = "") {
   companion object {
-    /** The codec used by CameraStreamCallback. */
+    /** The codec used by ImageFrameProcessor. */
     val codec: MessageCodec<Any?> by lazy {
       CameraPigeonCodec()
     }
@@ -150,7 +150,7 @@ class CameraStreamCallback(private val binaryMessenger: BinaryMessenger, private
   fun onImageFrame(frameArg: ImageFrame, callback: (Result<Unit>) -> Unit)
 {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-    val channelName = "dev.flutter.pigeon.com.example.basic_beauty_cam.CameraStreamCallback.onImageFrame$separatedMessageChannelSuffix"
+    val channelName = "dev.flutter.pigeon.com.example.basic_beauty_cam.ImageFrameProcessor.onImageFrame$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
     channel.send(listOf(frameArg)) {
       if (it is List<*>) {

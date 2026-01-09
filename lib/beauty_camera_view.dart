@@ -27,6 +27,7 @@ class BasicBeautyCamView extends StatelessWidget {
         creationParamsCodec: const StandardMessageCodec(),
         onPlatformViewCreated: (_) {
           BasicBeautyCam.enableBeauty();
+          BasicBeautyCam.setImageProcessor();
         },
       ),
     );

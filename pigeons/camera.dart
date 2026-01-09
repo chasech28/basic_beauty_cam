@@ -2,15 +2,22 @@ import 'package:pigeon/pigeon.dart';
 
 // Define data class for image frame
 class ImageFrame {
-  Uint8List? bytes;
-  int? width;
-  int? height;
-  int? rotation;
+  Uint8List bytes;
+  int width;
+  int height;
+  int rotation;
+
+  ImageFrame({
+    required this.bytes,
+    required this.width,
+    required this.height,
+    required this.rotation,
+  });
 }
 
 // FlutterApi: Native → Flutter callback for receiving image frames
 @FlutterApi()
-abstract class CameraStreamCallback {
+abstract class ImageFrameProcessor {
   void onImageFrame(ImageFrame frame);
 }
 
