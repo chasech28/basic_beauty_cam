@@ -6,20 +6,17 @@ import io.flutter.plugin.common.MethodChannel
 
 /** BasicBeautyCamPlugin */
 class BasicBeautyCamPlugin : FlutterPlugin {
-//    private lateinit var channel: MethodChannel
     private val viewTypeId = "basic_beauty_cam"
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        // Register native view factory
         flutterPluginBinding.platformViewRegistry.registerViewFactory(
             viewTypeId,
             NativeViewFactory(flutterPluginBinding.binaryMessenger)
         )
-
-//        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-//        channel.setMethodCallHandler(null)
+        // Cleanup if needed
     }
-}
-
+}        

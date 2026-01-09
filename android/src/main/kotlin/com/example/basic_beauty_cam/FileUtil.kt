@@ -3,6 +3,7 @@ package com.example.basic_beauty_cam
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -15,6 +16,12 @@ object FileUtil {
     private const val IMAGE_SUFFIX = ".jpg"
     private val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.getDefault())
 
+
+    fun bitmapToBytes(bitmap: Bitmap): ByteArray {
+        val output = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output)
+        return output.toByteArray()
+    }
 
     fun saveBitmapToCache(context: Context, bitmap: Bitmap?): String? {
         if (bitmap == null) {

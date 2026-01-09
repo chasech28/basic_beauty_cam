@@ -15,6 +15,86 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
+  if (empty) {
+    return <Object?>[];
+  }
+  if (error == null) {
+    return <Object?>[result];
+  }
+  return <Object?>[error.code, error.message, error.details];
+}
+bool _deepEquals(Object? a, Object? b) {
+  if (a is List && b is List) {
+    return a.length == b.length &&
+        a.indexed
+        .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
+  }
+  if (a is Map && b is Map) {
+    return a.length == b.length && a.entries.every((MapEntry<Object?, Object?> entry) =>
+        (b as Map<Object?, Object?>).containsKey(entry.key) &&
+        _deepEquals(entry.value, b[entry.key]));
+  }
+  return a == b;
+}
+
+
+class ImageFrame {
+  ImageFrame({
+    this.bytes,
+    this.width,
+    this.height,
+    this.rotation,
+  });
+
+  Uint8List? bytes;
+
+  int? width;
+
+  int? height;
+
+  int? rotation;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      bytes,
+      width,
+      height,
+      rotation,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static ImageFrame decode(Object result) {
+    result as List<Object?>;
+    return ImageFrame(
+      bytes: result[0] as Uint8List?,
+      width: result[1] as int?,
+      height: result[2] as int?,
+      rotation: result[3] as int?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! ImageFrame || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -23,6 +103,9 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
+    }    else if (value is ImageFrame) {
+      buffer.putUint8(129);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -31,8 +114,45 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
+      case 129: 
+        return ImageFrame.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
+    }
+  }
+}
+
+abstract class CameraStreamCallback {
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  void onImageFrame(ImageFrame frame);
+
+  static void setUp(CameraStreamCallback? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+    {
+      final pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.com.example.basic_beauty_cam.CameraStreamCallback.onImageFrame$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        pigeonVar_channel.setMessageHandler(null);
+      } else {
+        pigeonVar_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.com.example.basic_beauty_cam.CameraStreamCallback.onImageFrame was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ImageFrame? arg_frame = (args[0] as ImageFrame?);
+          assert(arg_frame != null,
+              'Argument for dev.flutter.pigeon.com.example.basic_beauty_cam.CameraStreamCallback.onImageFrame was null, expected non-null ImageFrame.');
+          try {
+            api.onImageFrame(arg_frame!);
+            return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
     }
   }
 }
@@ -72,7 +192,7 @@ class CameraApi {
     }
   }
 
-  Future<void> takePicture() async {
+  Future<String?> takePicture() async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.com.example.basic_beauty_cam.CameraApi.takePicture$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
@@ -90,7 +210,7 @@ class CameraApi {
         details: pigeonVar_replyList[2],
       );
     } else {
-      return;
+      return (pigeonVar_replyList[0] as String?);
     }
   }
 
@@ -118,6 +238,50 @@ class CameraApi {
 
   Future<void> disableBeauty() async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.com.example.basic_beauty_cam.CameraApi.disableBeauty$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> startImageStream() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.com.example.basic_beauty_cam.CameraApi.startImageStream$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> stopImageStream() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.com.example.basic_beauty_cam.CameraApi.stopImageStream$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

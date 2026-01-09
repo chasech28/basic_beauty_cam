@@ -36,15 +36,12 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
     // 定时器相关
     private val handler = Handler(Looper.getMainLooper())
     private var isTimerRunning = false
-    private val delayMillis = 100L
+    private val delayMillis = 1000L
 
     private val shotRunnable = object : Runnable {
-        var count = 0
-
         override fun run() {
             if (isTimerRunning) {
-                count++
-                Log.d(TAG, "timer: $count")
+                Log.d(TAG, "timer run")
                 handler.postDelayed(this, delayMillis)
             }
         }
@@ -66,13 +63,13 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume")
-//        startShotTimer()
+        startShotTimer()
     }
 
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "onPause")
-//        stopShotTimer()
+        stopShotTimer()
     }
 
     fun enableBeauty(enable: Boolean) {
@@ -91,7 +88,7 @@ class AICameraGLSurfaceView private constructor(context: Context, attrs: Attribu
         setPictureSize(1080, 1920, true)
 
         setOnCreateCallback {
-            setFilterWithConfig(BEAUTY)
+            startShotTimer()
         }
     }
 }

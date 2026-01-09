@@ -14,6 +14,9 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 private object CameraPigeonUtils {
 
+  fun createConnectionError(channelName: String): FlutterError {
+    return FlutterError("channel-error",  "Unable to establish connection on channel: '$channelName'.", "")  }
+
   fun wrapResult(result: Any?): List<Any?> {
     return listOf(result)
   }
@@ -33,6 +36,36 @@ private object CameraPigeonUtils {
       )
     }
   }
+  fun deepEquals(a: Any?, b: Any?): Boolean {
+    if (a is ByteArray && b is ByteArray) {
+        return a.contentEquals(b)
+    }
+    if (a is IntArray && b is IntArray) {
+        return a.contentEquals(b)
+    }
+    if (a is LongArray && b is LongArray) {
+        return a.contentEquals(b)
+    }
+    if (a is DoubleArray && b is DoubleArray) {
+        return a.contentEquals(b)
+    }
+    if (a is Array<*> && b is Array<*>) {
+      return a.size == b.size &&
+          a.indices.all{ deepEquals(a[it], b[it]) }
+    }
+    if (a is List<*> && b is List<*>) {
+      return a.size == b.size &&
+          a.indices.all{ deepEquals(a[it], b[it]) }
+    }
+    if (a is Map<*, *> && b is Map<*, *>) {
+      return a.size == b.size && a.all {
+          (b as Map<Any?, Any?>).contains(it.key) &&
+          deepEquals(it.value, b[it.key])
+      }
+    }
+    return a == b
+  }
+      
 }
 
 /**
@@ -46,22 +79,100 @@ class FlutterError (
   override val message: String? = null,
   val details: Any? = null
 ) : Throwable()
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class ImageFrame (
+  val bytes: ByteArray? = null,
+  val width: Long? = null,
+  val height: Long? = null,
+  val rotation: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): ImageFrame {
+      val bytes = pigeonVar_list[0] as ByteArray?
+      val width = pigeonVar_list[1] as Long?
+      val height = pigeonVar_list[2] as Long?
+      val rotation = pigeonVar_list[3] as Long?
+      return ImageFrame(bytes, width, height, rotation)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      bytes,
+      width,
+      height,
+      rotation,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is ImageFrame) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return CameraPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
 private open class CameraPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
-    return     super.readValueOfType(type, buffer)
+    return when (type) {
+      129.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          ImageFrame.fromList(it)
+        }
+      }
+      else -> super.readValueOfType(type, buffer)
+    }
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
-    super.writeValue(stream, value)
+    when (value) {
+      is ImageFrame -> {
+        stream.write(129)
+        writeValue(stream, value.toList())
+      }
+      else -> super.writeValue(stream, value)
+    }
   }
 }
 
 
+/** Generated class from Pigeon that represents Flutter messages that can be called from Kotlin. */
+class CameraStreamCallback(private val binaryMessenger: BinaryMessenger, private val messageChannelSuffix: String = "") {
+  companion object {
+    /** The codec used by CameraStreamCallback. */
+    val codec: MessageCodec<Any?> by lazy {
+      CameraPigeonCodec()
+    }
+  }
+  fun onImageFrame(frameArg: ImageFrame, callback: (Result<Unit>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.com.example.basic_beauty_cam.CameraStreamCallback.onImageFrame$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(frameArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(CameraPigeonUtils.createConnectionError(channelName)))
+      } 
+    }
+  }
+}
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraApi {
   fun switchCamera(callback: (Result<Unit>) -> Unit)
-  fun takePicture(callback: (Result<Unit>) -> Unit)
+  fun takePicture(callback: (Result<String?>) -> Unit)
   fun enableBeauty(callback: (Result<Unit>) -> Unit)
   fun disableBeauty(callback: (Result<Unit>) -> Unit)
+  fun startImageStream(callback: (Result<Unit>) -> Unit)
+  fun stopImageStream(callback: (Result<Unit>) -> Unit)
 
   companion object {
     /** The codec used by CameraApi. */
@@ -93,12 +204,13 @@ interface CameraApi {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.example.basic_beauty_cam.CameraApi.takePicture$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.takePicture{ result: Result<Unit> ->
+            api.takePicture{ result: Result<String?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(CameraPigeonUtils.wrapError(error))
               } else {
-                reply.reply(CameraPigeonUtils.wrapResult(null))
+                val data = result.getOrNull()
+                reply.reply(CameraPigeonUtils.wrapResult(data))
               }
             }
           }
@@ -128,6 +240,40 @@ interface CameraApi {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.disableBeauty{ result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(CameraPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(CameraPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.example.basic_beauty_cam.CameraApi.startImageStream$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.startImageStream{ result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(CameraPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(CameraPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.com.example.basic_beauty_cam.CameraApi.stopImageStream$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.stopImageStream{ result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(CameraPigeonUtils.wrapError(error))

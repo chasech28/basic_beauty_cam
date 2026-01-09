@@ -57,8 +57,9 @@ class _MyAppState extends State<MyApp> {
                       shadowColor: Colors.black,
                       elevation: 4,
                     ),
-                    onPressed: () {
-                      BasicBeautyCam.takePicture();
+                    onPressed: () async {
+                      var path = await BasicBeautyCam.takePicture();
+                      debugPrint('path: $path');
                     },
                     child: Text('拍照'),
                   ),

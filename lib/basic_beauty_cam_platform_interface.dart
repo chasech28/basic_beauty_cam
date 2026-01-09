@@ -23,7 +23,7 @@ abstract class BasicBeautyCamPlatform extends PlatformInterface {
     throw UnimplementedError('switchCamera() has not been implemented.');
   }
 
-  Future<void> takePicture() {
+  Future<String?> takePicture() {
     throw UnimplementedError('takePicture() has not been implemented.');
   }
 
@@ -33,5 +33,13 @@ abstract class BasicBeautyCamPlatform extends PlatformInterface {
 
   Future<void> disableBeauty() {
     throw UnimplementedError('disableBeauty() has not been implemented.');
+  }
+
+  Future<void> startImageStream() {
+    throw UnimplementedError('startImageStream() has not been implemented.');
+  }
+
+  Future<void> stopImageStream() {
+    throw UnimplementedError('stopImageStream() has not been implemented.');
   }
 }

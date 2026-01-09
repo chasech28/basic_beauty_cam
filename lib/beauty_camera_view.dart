@@ -1,3 +1,4 @@
+import 'package:basic_beauty_cam/basic_beauty_cam.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -24,6 +25,9 @@ class BasicBeautyCamView extends StatelessWidget {
         layoutDirection: TextDirection.ltr,
         creationParams: creationParams,
         creationParamsCodec: const StandardMessageCodec(),
+        onPlatformViewCreated: (_) {
+          BasicBeautyCam.enableBeauty();
+        },
       ),
     );
   }

@@ -18,12 +18,13 @@ class MethodChannelBasicBeautyCam extends BasicBeautyCamPlatform {
   }
 
   @override
-  Future<void> takePicture() async {
+  Future<String?> takePicture() async {
     try {
-      await cameraApi.takePicture();
+      return await cameraApi.takePicture();
     } catch (e) {
       debugPrint('Failed to take picture: $e');
     }
+    return null;
   }
 
   @override
@@ -41,6 +42,24 @@ class MethodChannelBasicBeautyCam extends BasicBeautyCamPlatform {
       await cameraApi.disableBeauty();
     } catch (e) {
       debugPrint('Failed to disable beauty: $e');
+    }
+  }
+
+  @override
+  Future<void> startImageStream() async {
+    try {
+      await cameraApi.startImageStream();
+    } catch (e) {
+      debugPrint('Failed to start image stream: $e');
+    }
+  }
+
+  @override
+  Future<void> stopImageStream() async {
+    try {
+      await cameraApi.stopImageStream();
+    } catch (e) {
+      debugPrint('Failed to stop image stream: $e');
     }
   }
 }
