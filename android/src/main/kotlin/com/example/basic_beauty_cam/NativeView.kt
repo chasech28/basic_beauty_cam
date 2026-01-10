@@ -1,18 +1,13 @@
-package com.example.basic_beauty_cam
-
-import CameraApi
-import ImageFrame
-import ImageFrameProcessor
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
-import com.example.basic_beauty_cam.AICameraGLSurfaceView.Companion.BEAUTY
 import io.flutter.plugin.platform.PlatformView
+import org.wysaid.myUtils.FileUtil
 
-internal class NativeView(
+class NativeView(
     private val context: Context,
     private val id: Int,
     private val creationParams: Map<String?, Any?>?,
@@ -101,6 +96,7 @@ internal class NativeView(
     private fun sendImageFrameToFlutter(bitmap: Bitmap) {
         val bytes = FileUtil.bitmapToBytes(bitmap)
 
+        //todo 降低内存开销
         val frame = ImageFrame(
             bytes = bytes,
             width = bitmap.width.toLong(),

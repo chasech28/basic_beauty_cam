@@ -1,6 +1,3 @@
-package com.example.basic_beauty_cam
-
-import ImageFrameProcessor
 import android.content.Context
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.StandardMessageCodec

@@ -30,8 +30,8 @@ class BasicBeautyCam {
   }
 
   /// Set the callback for receiving image frames from native code
-  static void setImageProcessor() {
-    ImageFrameProcessor.setUp(_ImageProcessor());
+  static void setImageProcessor(ImageFrameProcessor? processor) {
+    ImageFrameProcessor.setUp(processor ?? _ImageProcessor());
   }
 }
 
