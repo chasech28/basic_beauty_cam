@@ -6,6 +6,7 @@ import android.util.Log
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -19,8 +20,14 @@ object FileUtil {
 
     fun bitmapToBytes(bitmap: Bitmap): ByteArray {
         val output = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, output)
         return output.toByteArray()
+    }
+
+    fun bitmapToRawBytes(bitmap: Bitmap): ByteArray {
+        val buffer = ByteBuffer.allocate(bitmap.byteCount)
+        bitmap.copyPixelsToBuffer(buffer)
+        return buffer.array()
     }
 
     fun saveBitmapToCache(context: Context, bitmap: Bitmap?): String? {
@@ -101,19 +108,16 @@ object FileUtil {
         }
 
         return try {
-            // �֔(X�U
             val cacheDir = context.cacheDir
 
             if (!cacheDir.exists()) {
                 cacheDir.mkdirs()
             }
 
-            // ��
             val timestamp = dateFormat.format(Date())
             val fileName = "${IMAGE_PREFIX}${timestamp}${IMAGE_SUFFIX}"
             val imageFile = File(cacheDir, fileName)
 
-            // �X�G0��
             val fos = FileOutputStream(imageFile)
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality.coerceIn(0, 100), fos)
             fos.flush()
@@ -172,4 +176,5 @@ object FileUtil {
             emptyList()
         }
     }
+
 }

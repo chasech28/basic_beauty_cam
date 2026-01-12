@@ -13,7 +13,9 @@ class AICameraGLSurfaceView(context: Context, attrs: AttributeSet?) :
 
     companion object {
         const val TAG = "AICameraGLSurfaceView"
-        const val BEAUTY = "@beautify face 1 1080 1920"
+       const val BEAUTY = "@beautify face 1 1080 1920"
+        // const val BEAUTY = "@beautify face 1 640 640"
+        // const val BEAUTY = "@beautify face 1 480 640"
     }
 
     // HandlerThread for background processing
@@ -48,7 +50,12 @@ class AICameraGLSurfaceView(context: Context, attrs: AttributeSet?) :
         presetCameraForward(false)
         setZOrderOnTop(false)
         setZOrderMediaOverlay(true)
-        setPictureSize(2048, 2048, true)
+        // 这行代码不能少，否则预览会有问题 --- IGNORE ---
+        presetRecordingSize(1080, 1920);
+
+        setPictureSize(1080, 1920, true)
+        // setPictureSize(2048, 2048, true)
+        setFitFullView(true)
 
         setOnCreateCallback {
             enableBeauty()

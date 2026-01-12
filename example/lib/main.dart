@@ -37,35 +37,28 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Plugin example app')),
       body: SafeArea(
-        child: Column(
+        child: Stack(
+          alignment: Alignment.bottomCenter,
           children: [
-            SizedBox(width: 500, height: 500, child: BeautyCameraPreview()),
+            BeautyCameraPreview(),
             SizedBox(
               height: 50,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  TextButton(
-                    style: buttonStyle,
-                    onPressed: () {
-                      //   Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //       builder: (context) => const SecondPage(),
-                      //     ),
-                      //   );
-
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SecondPage(),
-                        ),
-                      );
-                    },
-                    child: const Text('跳转到第二页'),
-                  ),
+                  // TextButton(
+                  //   style: buttonStyle,
+                  //   onPressed: () {
+                  //     Navigator.pushReplacement(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => const SecondPage(),
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: const Text('跳转到第二页'),
+                  // ),
                   TextButton(
                     style: buttonStyle,
                     onPressed: () {

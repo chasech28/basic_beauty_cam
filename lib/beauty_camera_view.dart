@@ -17,9 +17,16 @@ class _BeautyCameraPreviewState extends State<BeautyCameraPreview> {
     const String viewType = 'basic_beauty_cam';
     final Map<String, dynamic> creationParams = <String, dynamic>{};
 
-    return Platform.isAndroid
-        ? buildAndroidView(viewType, creationParams)
-        : buildIOSView(viewType, creationParams);
+    return AnimatedOpacity(
+      opacity: 1.0,
+      duration: const Duration(milliseconds: 2000),
+      child: Container(
+        color: Colors.black,
+        child: Platform.isAndroid
+            ? buildAndroidView(viewType, creationParams)
+            : buildIOSView(viewType, creationParams),
+      ),
+    );
   }
 
   Widget buildAndroidView(viewType, creationParams) {

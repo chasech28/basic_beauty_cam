@@ -1,11 +1,14 @@
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import com.example.basic_beauty_cam.AICameraGLSurfaceView
+import com.example.basic_beauty_cam.AICameraGLSurfaceView.Companion.BEAUTY
+import com.example.basic_beauty_cam.FileUtil
 import io.flutter.plugin.platform.PlatformView
-import org.wysaid.myUtils.FileUtil
 
 class NativeView(
     private val context: Context,
@@ -17,7 +20,6 @@ class NativeView(
 
     private val cameraView = AICameraGLSurfaceView(context, null)
     private val mainHandler = Handler(Looper.getMainLooper())
-
 
 
     override fun getView(): View {
@@ -94,17 +96,15 @@ class NativeView(
     }
 
     private fun sendImageFrameToFlutter(bitmap: Bitmap) {
-        val bytes = FileUtil.bitmapToBytes(bitmap)
-
-        //todo 降低内存开销
+        val bytes = FileUtil.bitmapToRawBytes(bitmap)
+        
         val frame = ImageFrame(
             bytes = bytes,
             width = bitmap.width.toLong(),
             height = bitmap.height.toLong(),
             rotation = 0L
         )
-        Log.d(TAG, "width: ${bitmap.width}, height: ${bitmap.height} bytes: ${bytes.size}")
-        
+
         mainHandler.post {
             cameraStreamProcessor.onImageFrame(frame) { result ->
                 // Handle result if needed (optional)

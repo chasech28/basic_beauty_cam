@@ -1,8 +1,7 @@
 package com.example.basic_beauty_cam
 
-import io.flutter.embedding.android.KeyData.CHANNEL
+import NativeViewFactory
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodChannel
 
 /** BasicBeautyCamPlugin */
 class BasicBeautyCamPlugin : FlutterPlugin {
