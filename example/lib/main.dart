@@ -1,11 +1,8 @@
 import 'package:basic_beauty_cam/beauty_camera_view.dart';
-import 'package:basic_beauty_cam_example/permission.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:basic_beauty_cam/basic_beauty_cam.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,11 +18,27 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // final _basicBeautyCamPlugin = BasicBeautyCam();
+  int _frameCount = 0;
 
   @override
   void initState() {
     super.initState();
+
+    // Set up image frame callback to receive frames from native code
+    BasicBeautyCam.setImageFrameCallback((frame) {
+      _frameCount++;
+      debugPrint(
+        'Received frame #$_frameCount: ${frame.width}x${frame.height}, '
+        'bytes: ${frame.bytes.length}',
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    // Clean up callback when widget is disposed
+    BasicBeautyCam.setImageFrameCallback(null);
+    super.dispose();
   }
 
   final buttonStyle = TextButton.styleFrom(

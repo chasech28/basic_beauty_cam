@@ -104,6 +104,7 @@ class NativeView(
             height = bitmap.height.toLong(),
             rotation = 0L
         )
+        bitmap.recycle()
 
         mainHandler.post {
             cameraStreamProcessor.onImageFrame(frame) { result ->

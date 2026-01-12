@@ -1,6 +1,3 @@
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
-
 import 'basic_beauty_cam_platform_interface.dart';
 import 'camera.g.dart';
 
@@ -29,18 +26,25 @@ class BasicBeautyCam {
     await BasicBeautyCamPlatform.instance.stopImageStream();
   }
 
-  /// Set the callback for receiving image frames from native code
-  static void setImageProcessor(ImageFrameProcessor? processor) {
-    ImageFrameProcessor.setUp(processor ?? _ImageProcessor());
+  /// Set callback for receiving image frames from native code
+  /// This callback will be invoked for each frame when image stream is active
+  static void setImageFrameCallback(ImageFrameCallback? callback) {
+    ImageFrameProcessor.setUp(_ImageFrameCallbackAdapter(callback));
   }
 }
 
-/// Internal adapter to convert FlutterApi callback to user callback
-class _ImageProcessor implements ImageFrameProcessor {
+/// Image frame callback function type
+/// Use this to receive image frames sent from native code
+typedef ImageFrameCallback = void Function(ImageFrame frame);
+
+/// Internal adapter to bridge FlutterApi callback to user callback
+class _ImageFrameCallbackAdapter implements ImageFrameProcessor {
+  final ImageFrameCallback? _imageFrameCallback;
+
+  _ImageFrameCallbackAdapter(this._imageFrameCallback);
+
   @override
   void onImageFrame(ImageFrame frame) {
-    debugPrint(
-      'Received image frame: ${frame.width}x${frame.height}, rotation: ${frame.rotation}, bytes length: ${frame.bytes.length}',
-    );
+    _imageFrameCallback?.call(frame);
   }
 }
