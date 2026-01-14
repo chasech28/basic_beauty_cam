@@ -9,9 +9,9 @@ class NativeViewFactory(private val messenger: BinaryMessenger) :
 
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
         val creationParams = args as Map<String?, Any?>?
-        val cameraStreamProcessor = ImageFrameProcessor(messenger)
+        val imageStreamProcessor = ImageFrameProcessor(messenger)
         // Set up CameraStreamCallback for sending image frames to Flutter
-        val nativeView = NativeView(context, viewId, creationParams, cameraStreamProcessor)
+        val nativeView = NativeView(context, viewId, creationParams, imageStreamProcessor)
 
         // Set up CameraApi with NativeView as the implementation
         CameraApi.setUp(messenger, nativeView)

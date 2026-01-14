@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     // Set up image frame callback to receive frames from native code
-    BasicBeautyCam.setImageFrameCallback((frame) {
+    BeautyCameraController.setImageFrameCallback((frame) {
       _frameCount++;
       debugPrint(
         'Received frame #$_frameCount: ${frame.width}x${frame.height}, '
@@ -37,7 +37,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     // Clean up callback when widget is disposed
-    BasicBeautyCam.setImageFrameCallback(null);
+    BeautyCameraController.setImageFrameCallback(null);
     super.dispose();
   }
 
@@ -75,14 +75,14 @@ class _MyAppState extends State<MyApp> {
                   TextButton(
                     style: buttonStyle,
                     onPressed: () {
-                      BasicBeautyCam.switchCamera();
+                      BeautyCameraController.switchCamera();
                     },
                     child: const Text('切换相机'),
                   ),
                   TextButton(
                     style: buttonStyle,
                     onPressed: () async {
-                      var path = await BasicBeautyCam.takePicture();
+                      var path = await BeautyCameraController.takePicture();
                       debugPrint('path: $path');
                     },
                     child: const Text('拍照'),
@@ -90,28 +90,28 @@ class _MyAppState extends State<MyApp> {
                   TextButton(
                     style: buttonStyle,
                     onPressed: () {
-                      BasicBeautyCam.enableBeauty();
+                      BeautyCameraController.enableBeauty();
                     },
                     child: const Text('开启美颜'),
                   ),
                   TextButton(
                     style: buttonStyle,
                     onPressed: () {
-                      BasicBeautyCam.disableBeauty();
+                      BeautyCameraController.disableBeauty();
                     },
                     child: const Text('关闭美颜'),
                   ),
                   TextButton(
                     style: buttonStyle,
                     onPressed: () async {
-                      BasicBeautyCam.startImageStream();
+                      BeautyCameraController.startImageStream();
                     },
                     child: const Text('开启图像流'),
                   ),
                   TextButton(
                     style: buttonStyle,
                     onPressed: () async {
-                      BasicBeautyCam.stopImageStream();
+                      BeautyCameraController.stopImageStream();
                     },
                     child: const Text('关闭图像流'),
                   ),

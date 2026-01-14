@@ -1,7 +1,31 @@
+import 'package:basic_beauty_cam/permission.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import 'basic_beauty_cam_platform_interface.dart';
 import 'camera.g.dart';
 
-class BasicBeautyCam {
+class BeautyCameraController {
+  static bool _isInitialized = false;
+
+  /// Check if the camera has been initialized
+  /// Returns true after camera permissions are granted and camera is ready
+  static bool get isInitialized => _isInitialized;
+
+  /// Initialize the camera (call this after permissions are granted)
+  static Future<bool> initialize() async {
+    final status = await PermissionUtils.checkAndRequestPermission(
+      Permission.camera,
+    );
+
+    if (status == PermissionStatus.granted) {
+      _isInitialized = true;
+    } else {
+      _isInitialized = false;
+    }
+
+    return _isInitialized;
+  }
+
   static Future<void> switchCamera() async {
     await BasicBeautyCamPlatform.instance.switchCamera();
   }

@@ -24,11 +24,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
-  basic_beauty_cam: 244c107c14cc76dd3496ee8a5592d23c0d07170d
+  basic_beauty_cam: e925d52de5af6022b2ca53fc032da51aa67b2461
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
 
-PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+PODFILE CHECKSUM: 21cf9f5f8020e9e03f2b3643d9522cfe2038efd9
 
 COCOAPODS: 1.16.2
