@@ -13,10 +13,20 @@ A new Flutter plugin project.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source           = { :git => 'https://github.com/wysaid/ios-gpuimage-plus.git'}
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
+
+  # CGE Framework - vendored frameworks
+  s.vendored_frameworks = 'Libraries/cge.framework'
+  
+  # System libraries required by CGE
+  s.libraries = 'z', 'stdc++'
+  
+  # Framework search paths
+  s.xcconfig = { 
+    'FRAMEWORK_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/basic_beauty_cam/Libraries' 
+  }
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
